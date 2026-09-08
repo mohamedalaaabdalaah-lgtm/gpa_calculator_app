@@ -26,13 +26,9 @@ def calculate_semester_gpa(courses):
         gpa=total_points/total_hours
     return gpa
 #=================cumulative gpa calculation========================
-def calculate_cumulative_gpa(old_gpa, old_hours, courses):
-    total_points=old_gpa*old_hours
-    total_hours=old_hours
-    for course in courses:
-        points=grade_into_point[course['grade']]*course['credit_hours']
-        total_points+=points
-        total_hours+=course['credit_hours']
+def calculate_cumulative_gpa(gpa1, gpa1_hours, gpa2, gpa2_hours):
+    total_points=gpa1*gpa1_hours + gpa2*gpa2_hours
+    total_hours=gpa1_hours + gpa2_hours
     if total_hours==0:
         gpa=0
     else:
