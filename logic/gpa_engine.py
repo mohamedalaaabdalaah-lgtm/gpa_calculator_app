@@ -1,12 +1,11 @@
-from gpa_calculator_app.logic.scale_manager import get_grade_points # دي الفانكشن الي انتي هتستخدميها 
-
+from gpa_calculator_app.logic.scale_manager import get_grade_points 
 
 #=================semester gpa calculation========================
 def calculate_semester_gpa(courses):
     total_points=0
     total_hours=0
     for course in courses:
-        points=grade_into_point[course['grade']]*course['credit_hours']
+        points=get_grade_points(course['grade'], course['scale_type']) * course['credit_hours']
         total_points+=points
         total_hours+=course['credit_hours']
     if total_hours==0:
