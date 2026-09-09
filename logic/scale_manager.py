@@ -24,7 +24,7 @@ def check_scale(scale_data):
 
         return True
 
-def get_grade_points(grade, scale_type):
+def get_grade_points(grade, scale_type = "standaed",custom_scale_dict=None):
     grade = grade.upper()
 
     if scale_type == "standard" :
@@ -32,6 +32,11 @@ def get_grade_points(grade, scale_type):
 
     elif scale_type == "half_point":
         scale = HALF_POINT_SCALE
+
+    elif scale_type == "custom":
+        if custom_scale_dict and grade in custom_scale_dict:
+            return float(custom_scale_dict[grade])
+        return 0.0
 
     else:
         raise ValueError("Invalid scale type. use 'standard' or 'half_point' .")  
