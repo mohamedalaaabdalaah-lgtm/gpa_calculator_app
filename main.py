@@ -1,0 +1,1 @@
+from gpa_calculator_app.UI.main_window import GPAMainWindow

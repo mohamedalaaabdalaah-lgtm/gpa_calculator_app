@@ -1,5 +1,21 @@
 import customtkinter as ctk
 
+#link all backend files
+from gpa_calculator_app.logic.gpa_engine import (
+    calculate_required_gpa,
+    calculate_cumulative_gpa,
+    calculate_semester_gpa
+)
+from gpa_calculator_app.logic.scale_manager import (
+    check_scale,
+    get_grade_points
+)
+from gpa_calculator_app.logic.data_manager import (
+    load_user_data,
+    save_user_data
+)
+
+
 # APP SETTINGS
 ctk.set_appearance_mode("Light")
 ctk.set_default_color_theme("blue")
