@@ -1,0 +1,11 @@
+# PyInstaller outputs
+build/
+dist/
+*.spec
+
+# Python bytecode
+__pycache__/
+*.pyc
+
+# VS Code settings
+.vscode/
