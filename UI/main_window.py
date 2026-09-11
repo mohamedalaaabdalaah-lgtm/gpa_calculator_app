@@ -7,7 +7,6 @@ from gpa_calculator_app.logic.gpa_engine import (
     calculate_semester_gpa
 )
 from gpa_calculator_app.logic.scale_manager import (
-    check_scale,
     get_grade_points
 )
 from gpa_calculator_app.logic.data_manager import (
@@ -15,12 +14,13 @@ from gpa_calculator_app.logic.data_manager import (
     save_user_data
 )
 
-# APP SETTINGS
+
+# app settings
 ctk.set_appearance_mode("Light")
 ctk.set_default_color_theme("blue")
 
 
-# 1. GPA CALCULATOR UI
+# GPA CALCULATOR UI
 class GPACalculatorUIFrame(ctk.CTkFrame):
 
     def __init__(self, parent, scale_name, scale_type="standard", custom_scale_dict=None, on_edit_custom=None):
@@ -28,9 +28,9 @@ class GPACalculatorUIFrame(ctk.CTkFrame):
 
         self.scale_type = scale_type
         self.custom_scale_dict = custom_scale_dict or {}
-        self.on_edit_custom = on_edit_custom  # Callback لتعديل الـ Custom Scale
+        self.on_edit_custom = on_edit_custom 
 
-        # قراءة الداتا المحفوظة من الفايل 
+        #  قراءة الداتا المحفوظة من الفايل بتاعت يوسف 
         all_data = load_user_data()
         self.courses_list = all_data.get(self.scale_type, [])
 
@@ -38,11 +38,11 @@ class GPACalculatorUIFrame(ctk.CTkFrame):
         self.grid_rowconfigure(1, weight=1)
         self.grid_columnconfigure(0, weight=1)
 
-        # INPUT PANEL
+        # Input Frame (  parant  )
         self.input_frame = ctk.CTkFrame(self, corner_radius=8)
         self.input_frame.grid(row=0, column=0, sticky="ew", padx=10, pady=10)
 
-        # Course Name Label
+        # course name Label
         ctk.CTkLabel(
             self.input_frame,
             text="Course Name:",
@@ -57,14 +57,14 @@ class GPACalculatorUIFrame(ctk.CTkFrame):
         )
         self.entry_name.grid(row=0, column=1, padx=8, pady=8)
 
-        # Credit Hours Label
+        # credit Hours Label
         ctk.CTkLabel(
             self.input_frame,
             text="Credit Hours:",
             font=("Arial", 12, "bold")
         ).grid(row=0, column=2, padx=8, pady=8, sticky="w")
 
-        # Input Credit Hours
+        # input credit hours
         self.entry_hours = ctk.CTkEntry(
             self.input_frame,
             placeholder_text="e.g. 3",
@@ -79,15 +79,23 @@ class GPACalculatorUIFrame(ctk.CTkFrame):
             font=("Arial", 12, "bold")
         ).grid(row=0, column=4, padx=8, pady=8, sticky="w")
 
-        # Input Grade
+        # input Grade (standard vs custom)
+        if self.scale_type == "standard":
+            grade_values = ["A+", "A", "A-", "B+", "B", "B-", "C+", "C", "C-", "D+", "D", "F"]
+        elif self.scale_type == "custom" and self.on_edit_custom:
+            grade_values =  ["A+", "A", "A-", "B+", "B", "B-", "C+", "C", "C-", "D+", "D", "F"]
+        else:# half
+            grade_values = [ "A", "B+", "B", "C+", "C", "D+", "D", "F"]
+
         self.combo_grade = ctk.CTkOptionMenu(
             self.input_frame,
-            values=["A+", "A", "A-", "B+", "B", "B-", "C+", "C", "D", "F"],
+            values=grade_values,
             width=90
         )
-        self.combo_grade.grid(row=0, column=5, padx=8, pady=8)
+        self.combo_grade.grid(row=0, column=5, padx=5, pady=5)
+            
 
-        # Add Course Button 
+        # add Course Button 
         self.btn_add = ctk.CTkButton(
             self.input_frame,
             text="+ Add Course",
@@ -96,7 +104,7 @@ class GPACalculatorUIFrame(ctk.CTkFrame):
         )
         self.btn_add.grid(row=0, column=6, padx=8, pady=8)
 
-        # Edit Scale Button (يظهر فقط في الـ Custom Scale)
+        # edit scale button if custom 
         if self.scale_type == "custom" and self.on_edit_custom:
             self.btn_edit_scale = ctk.CTkButton(
                 self.input_frame,
@@ -109,22 +117,23 @@ class GPACalculatorUIFrame(ctk.CTkFrame):
             )
             self.btn_edit_scale.grid(row=0, column=7, padx=8, pady=8)
 
-        # ERROR LABEL (تمت إضافته لمنع الخطأ عند الاستدعاء)
+        # ERROR LABEL 
         self.lbl_error = ctk.CTkLabel(
             self.input_frame,
-            text="",
+            text="", # no error 
             text_color="#FF4D4D",
             font=("Arial", 11, "bold")
         )
         self.lbl_error.grid(row=1, column=0, columnspan=8, padx=8, pady=(0, 5), sticky="w")
 
-        # COURSES TABLE
+
+        # Courses Table
         self.table_frame = ctk.CTkScrollableFrame(
             self,
             label_text=f"Added Courses ({scale_name})"
         )
         self.table_frame.grid(row=1, column=0, sticky="nsew", padx=10, pady=5)
-        self.table_frame.grid_columnconfigure((0, 1, 2, 3), weight=1)
+        self.table_frame.grid_columnconfigure((0, 1, 2, 3), weight=1) # 4 columns (0 to 3)
 
         # Table Headers
         headers = ["Course Name", "Credit Hours", "Grade", "Action"]
@@ -136,7 +145,7 @@ class GPACalculatorUIFrame(ctk.CTkFrame):
                 text_color="#888888"
             ).grid(row=0, column=col, pady=5)
 
-        # SUMMARY BAR
+        # summary Bar (frame totaal hours and gpa)
         self.summary_frame = ctk.CTkFrame(self, corner_radius=8, fg_color="#1f538d")
         self.summary_frame.grid(row=2, column=0, sticky="ew", padx=10, pady=10)
         self.summary_frame.grid_columnconfigure((0, 1), weight=1)
@@ -160,15 +169,18 @@ class GPACalculatorUIFrame(ctk.CTkFrame):
         # Refresh
         self.refresh_table_and_summary()
 
+        # end of __init__
+
+    # methodsss
     def add_course(self):
-        # مسح أي خطأ سابق
+        #delete any error 
         self.lbl_error.configure(text="")
 
-        name = self.entry_name.get().strip()
-        hours_raw = self.entry_hours.get().strip()
-        grade = self.combo_grade.get()
+        name = self.entry_name.get().strip() 
+        hours_raw = self.entry_hours.get().strip() 
+        grade = self.combo_grade.get() 
 
-        # empty input 
+        # empty input error
         if not name or not hours_raw:
             self.lbl_error.configure(text="Please enter both course name and credit hours.")
             return
@@ -178,14 +190,14 @@ class GPACalculatorUIFrame(ctk.CTkFrame):
             if hours <= 0:
                 self.lbl_error.configure(text="Credit hours must be greater than 0.")
                 return
-            elif hours > 6:
+            elif hours > 6: #  6 عشان التخرج
                 self.lbl_error.configure(text="Maximum credit hours per course is 6 hours.")
                 return
         except ValueError:
             self.lbl_error.configure(text="Credit hours must be a valid number.")
             return
 
-        # add to list
+        # add to list 
         self.courses_list.append({"name": name, "hours": hours, "grade": grade})
 
         # save after addition
@@ -196,16 +208,19 @@ class GPACalculatorUIFrame(ctk.CTkFrame):
         self.entry_hours.delete(0, 'end')
         self.refresh_table_and_summary()
 
+    # delete course
     def delete_course(self, index):
         self.courses_list.pop(index)
         self.save_to_json()
         self.refresh_table_and_summary()
 
+    # save 
     def save_to_json(self):
         all_data = load_user_data()
         all_data[self.scale_type] = self.courses_list
         save_user_data(all_data)
 
+    #refresh
     def refresh_table_and_summary(self):
         # delete old rows
         for widget in self.table_frame.winfo_children():
@@ -213,7 +228,7 @@ class GPACalculatorUIFrame(ctk.CTkFrame):
             if "row" in grid_info and int(grid_info["row"]) > 0:
                 widget.destroy()
 
-        # render new rows
+        #  new rows
         for idx, course in enumerate(self.courses_list, start=1):
             ctk.CTkLabel(self.table_frame, text=course["name"]).grid(row=idx, column=0, pady=4)
             ctk.CTkLabel(self.table_frame, text=str(course["hours"])).grid(row=idx, column=1, pady=4)
@@ -238,13 +253,14 @@ class GPACalculatorUIFrame(ctk.CTkFrame):
         self.lbl_gpa.configure(text=f"GPA: {gpa:.2f}")
 
 
-# 2. CUSTOM SCALE CONFIGURATION
+# CUSTOM SCALE CONFIGURATION
 class CustomScaleUIFrame(ctk.CTkFrame):
 
     def __init__(self, parent, on_save):
         super().__init__(parent)
 
         self.on_save = on_save
+        # for grades
         self.entries = []
 
         # TITLE
@@ -267,7 +283,7 @@ class CustomScaleUIFrame(ctk.CTkFrame):
             self.scroll_frame, text="Point Value", font=("Arial", 13, "bold")
         ).grid(row=0, column=1, padx=20, pady=5)
 
-        # DEFAULT GRADES
+        # DEFAULT
         grades = [
             ("A+", "4.0"),
             ("A", "3.75"),
@@ -281,7 +297,7 @@ class CustomScaleUIFrame(ctk.CTkFrame):
             ("F", "0.0"),
         ]
 
-        # CREATE GRADE ROWS
+        # create grades rows
         for idx, (grade, value) in enumerate(grades, start=1):
             ctk.CTkLabel(
                 self.scroll_frame, text=grade, font=("Arial", 14, "bold")
@@ -293,13 +309,13 @@ class CustomScaleUIFrame(ctk.CTkFrame):
 
             self.entries.append(entry)
 
-        # ERROR LABEL
+        #error Label
         self.lbl_error = ctk.CTkLabel(
             self, text="", text_color="#FF4D4D", font=("Arial", 12, "bold")
         )
         self.lbl_error.pack(pady=(0, 5))
 
-        # SAVE BUTTON
+        # Save button
         ctk.CTkButton(
             self,
             text="Save Custom Scale",
@@ -309,28 +325,32 @@ class CustomScaleUIFrame(ctk.CTkFrame):
             command=self.save_scale,
         ).pack(pady=(0, 15))
 
+
+    # methodss
     def save_scale(self):
+        # delete any error 
         self.lbl_error.configure(text="")
 
         try:
-            custom_scale = {}
+            custom_scale = {} # dic to save the custom
             grades = ["A+", "A", "A-", "B+", "B", "B-", "C+", "C", "D", "F"]
 
-            for grade, entry in zip(grades, self.entries):
+            for grade, entry in zip(grades, self.entries):# zip take one from grades and one from entries and sve it in custom scale
                 raw_val = entry.get().strip()
 
-                if not raw_val:
+                if not raw_val: #empty
                     self.lbl_error.configure(text="Please fill in all grade point values.")
                     return
 
                 value = float(raw_val)
 
-                if value < 0 or value > 10:
-                    self.lbl_error.configure(text="Point values must be between 0.0 and 10.0.")
+                if value < 0 or value > 4:
+                    self.lbl_error.configure(text="Point values must be between 0.0 and 4.0.")
                     return
 
                 custom_scale[grade] = value
 
+            # delete any error
             self.lbl_error.configure(text="")
             self.on_save(custom_scale)
 
@@ -338,7 +358,7 @@ class CustomScaleUIFrame(ctk.CTkFrame):
             self.lbl_error.configure(text="Please enter valid numerical values for points.")
 
 
-# 3. TARGET GPA PAGE
+# target gpa page 
 class TargetGPAUIFrame(ctk.CTkFrame):
 
     def __init__(self, parent):
@@ -346,7 +366,7 @@ class TargetGPAUIFrame(ctk.CTkFrame):
 
         self.grid_columnconfigure(0, weight=1)
 
-        # TITLE
+        # title
         ctk.CTkLabel(
             self, text="Target GPA", font=("Arial", 22, "bold")
         ).grid(row=0, column=0, pady=(25, 5))
@@ -355,12 +375,12 @@ class TargetGPAUIFrame(ctk.CTkFrame):
             self, text="Calculate the GPA you need to reach your target.", font=("Arial", 13)
         ).grid(row=1, column=0, pady=(0, 20))
 
-        # INPUT FRAME
-        self.input_frame = ctk.CTkFrame(self, corner_radius=10)
+        # input frame
+        self.input_frame = ctk.CTkFrame(self, corner_radius=10) # parant frame 
         self.input_frame.grid(row=2, column=0, padx=80, pady=10, sticky="ew")
         self.input_frame.grid_columnconfigure(1, weight=1)
 
-        # CURRENT GPA
+        # current gpa
         ctk.CTkLabel(
             self.input_frame, text="Current GPA:", font=("Arial", 13, "bold")
         ).grid(row=0, column=0, padx=15, pady=12, sticky="w")
@@ -368,7 +388,7 @@ class TargetGPAUIFrame(ctk.CTkFrame):
         self.entry_current_gpa = ctk.CTkEntry(self.input_frame, placeholder_text="e.g. 3.20")
         self.entry_current_gpa.grid(row=0, column=1, padx=15, pady=12, sticky="ew")
 
-        # COMPLETED HOURS
+        # completed hours
         ctk.CTkLabel(
             self.input_frame, text="Completed Credit Hours:", font=("Arial", 13, "bold")
         ).grid(row=1, column=0, padx=15, pady=12, sticky="w")
@@ -376,7 +396,7 @@ class TargetGPAUIFrame(ctk.CTkFrame):
         self.entry_completed_hours = ctk.CTkEntry(self.input_frame, placeholder_text="e.g. 60")
         self.entry_completed_hours.grid(row=1, column=1, padx=15, pady=12, sticky="ew")
 
-        # TARGET GPA
+        # target gpa
         ctk.CTkLabel(
             self.input_frame, text="Target GPA:", font=("Arial", 13, "bold")
         ).grid(row=2, column=0, padx=15, pady=12, sticky="w")
@@ -384,7 +404,7 @@ class TargetGPAUIFrame(ctk.CTkFrame):
         self.entry_target_gpa = ctk.CTkEntry(self.input_frame, placeholder_text="e.g. 3.50")
         self.entry_target_gpa.grid(row=2, column=1, padx=15, pady=12, sticky="ew")
 
-        # FUTURE HOURS
+        # future hours
         ctk.CTkLabel(
             self.input_frame, text="Target Credit Hour (completed + future):", font=("Arial", 13, "bold")
         ).grid(row=3, column=0, padx=15, pady=12, sticky="w")
@@ -392,7 +412,7 @@ class TargetGPAUIFrame(ctk.CTkFrame):
         self.entry_future_hours = ctk.CTkEntry(self.input_frame, placeholder_text="e.g. 15")
         self.entry_future_hours.grid(row=3, column=1, padx=15, pady=12, sticky="ew")
 
-        # CALCULATE BUTTON
+        # calculate button
         ctk.CTkButton(
             self.input_frame,
             text="Calculate Required GPA",
@@ -402,7 +422,7 @@ class TargetGPAUIFrame(ctk.CTkFrame):
             command=self.calculate_target
         ).grid(row=4, column=0, columnspan=2, padx=15, pady=20)
 
-        # RESULT
+        # result
         self.result_label = ctk.CTkLabel(
             self,
             text="Required GPA: --",
@@ -411,6 +431,8 @@ class TargetGPAUIFrame(ctk.CTkFrame):
         )
         self.result_label.grid(row=3, column=0, pady=25)
 
+
+    # methodsss
     def calculate_target(self):
         try:
             current_gpa = float(self.entry_current_gpa.get())
@@ -423,6 +445,7 @@ class TargetGPAUIFrame(ctk.CTkFrame):
             if current_gpa < 0 or current_gpa > 4.0 or target_gpa < 0 or target_gpa > 4.0:
                 raise ValueError
 
+            #calculate backend function
             req_gpa = calculate_required_gpa(current_gpa, completed_hours, target_gpa, future_hours)
 
             if req_gpa > 4.0:
@@ -448,7 +471,7 @@ class TargetGPAUIFrame(ctk.CTkFrame):
             )
 
 
-# 4. CUMULATIVE GPA PAGE
+#CUMULATIVE GPA PAGE
 class CumulativeGPAUIFrame(ctk.CTkFrame):
     def __init__(self, parent):
         super().__init__(parent)
@@ -458,7 +481,7 @@ class CumulativeGPAUIFrame(ctk.CTkFrame):
         self.grid_rowconfigure(2, weight=1)
         self.grid_columnconfigure(0, weight=1)
 
-        # TITLE
+        # title
         ctk.CTkLabel(
             self, text="Cumulative GPA", font=("Arial", 22, "bold")
         ).grid(row=0, column=0, pady=(20, 5))
@@ -467,27 +490,27 @@ class CumulativeGPAUIFrame(ctk.CTkFrame):
             self, text="Add your semesters and calculate your cumulative GPA.", font=("Arial", 13)
         ).grid(row=1, column=0, pady=(0, 15))
 
-        # MAIN FRAME
+        # main frame (parant)
         self.main_frame = ctk.CTkFrame(self, corner_radius=10)
         self.main_frame.grid(row=2, column=0, sticky="nsew", padx=50, pady=10)
         self.main_frame.grid_columnconfigure(0, weight=1)
 
-        # HEADERS 
+        # headers
         header_frame = ctk.CTkFrame(self.main_frame, fg_color="transparent")
         header_frame.grid(row=0, column=0, sticky="ew", padx=10, pady=10)
-        header_frame.grid_columnconfigure((0, 1, 2, 3), weight=1)
+        header_frame.grid_columnconfigure((0, 1, 2, 3), weight=1) #4 colunms
 
         ctk.CTkLabel(header_frame, text="Semester", font=("Arial", 13, "bold")).grid(row=0, column=0)
         ctk.CTkLabel(header_frame, text="GPA", font=("Arial", 13, "bold")).grid(row=0, column=1)
         ctk.CTkLabel(header_frame, text="Credit Hours", font=("Arial", 13, "bold")).grid(row=0, column=2)
         ctk.CTkLabel(header_frame, text="Action", font=("Arial", 13, "bold")).grid(row=0, column=3)
 
-        # SEMESTERS FRAME
+        # semester frame
         self.semesters_frame = ctk.CTkScrollableFrame(self.main_frame, height=180)
         self.semesters_frame.grid(row=1, column=0, sticky="nsew", padx=10, pady=5)
         self.semesters_frame.grid_columnconfigure(0, weight=1)
 
-        # BUTTONS CONTAINER
+        # Buttons Frame
         buttons_frame = ctk.CTkFrame(self.main_frame, fg_color="transparent")
         buttons_frame.grid(row=2, column=0, pady=10)
 
@@ -507,7 +530,7 @@ class CumulativeGPAUIFrame(ctk.CTkFrame):
             command=self.calculate_cumulative
         ).pack(side="left", padx=10)
 
-        # RESULT LABEL 
+        # Result Label
         self.result_label = ctk.CTkLabel(
             self,
             text="Cumulative GPA: --",
@@ -516,14 +539,15 @@ class CumulativeGPAUIFrame(ctk.CTkFrame):
         )
         self.result_label.grid(row=3, column=0, pady=(5, 15))
 
-        self.add_semester()
+        self.add_semester() # to frst time
 
+    # methodss
     def add_semester(self):
-        semester_number = len(self.semesters) + 1
+        semester_number = len(self.semesters) + 1 # (0 + 1 = 1 )
 
         row_frame = ctk.CTkFrame(self.semesters_frame, fg_color="transparent")
         row_frame.grid(row=len(self.semesters), column=0, sticky="ew", pady=5)
-        row_frame.grid_columnconfigure((0, 1, 2, 3), weight=1)
+        row_frame.grid_columnconfigure((0, 1, 2, 3), weight=1) #4
 
         lbl_name = ctk.CTkLabel(row_frame, text=f"Semester {semester_number}", font=("Arial", 12, "bold"))
         lbl_name.grid(row=0, column=0, padx=5)
@@ -534,7 +558,8 @@ class CumulativeGPAUIFrame(ctk.CTkFrame):
         hours_entry = ctk.CTkEntry(row_frame, placeholder_text="e.g. 15", width=100)
         hours_entry.grid(row=0, column=2, padx=5)
 
-        item = [gpa_entry, hours_entry, row_frame, lbl_name]
+        item = [gpa_entry, hours_entry, row_frame, lbl_name] # store total frame 
+        # delete button
         del_btn = ctk.CTkButton(
             row_frame,
             text="Delete",
@@ -545,13 +570,14 @@ class CumulativeGPAUIFrame(ctk.CTkFrame):
         )
         del_btn.grid(row=0, column=3, padx=5)
 
-        self.semesters.append(item)
+        self.semesters.append(item) # add item to semester list .
 
     def delete_semester(self, item):
         if item in self.semesters:
-            self.semesters.remove(item)
-            item[2].destroy()
-            
+            self.semesters.remove(item) # delete from list
+            item[2].destroy() # delete from screen
+
+            # renumber list
             for idx, sem in enumerate(self.semesters, start=1):
                 sem[3].configure(text=f"Semester {idx}")
 
@@ -564,7 +590,7 @@ class CumulativeGPAUIFrame(ctk.CTkFrame):
             return
 
         try:
-            semesters_data = []
+            semesters_data = [] # dic to cumulative function
             for gpa_entry, hours_entry, _, _ in self.semesters:
                 gpa_val = float(gpa_entry.get())
                 hours_val = float(hours_entry.get())
@@ -591,15 +617,16 @@ class CumulativeGPAUIFrame(ctk.CTkFrame):
             )
 
 
-# 5. MAIN WINDOW
+# main window
 class GPAMainWindow(ctk.CTk):
 
     def __init__(self):
         super().__init__()
 
+        #close app X
         self.protocol("WM_DELETE_WINDOW", self.on_close)
 
-        # WINDOW SETTINGS
+        # window settings
         self.geometry("1100x650")
         self.minsize(950, 550)
         self.title("GPA Calculator")
@@ -610,11 +637,12 @@ class GPAMainWindow(ctk.CTk):
         self.active_color = "#1f538d"
         self.inactive_color = "#3a3a3a"
 
+        # main frame (standard , half,....)
         self.top_bar = ctk.CTkFrame(self, corner_radius=10)
         self.top_bar.grid(row=0, column=0, sticky="ew", padx=15, pady=10)
         self.top_bar.grid_columnconfigure(5, weight=1)
 
-        # BUTTONS
+        # buttons
         self.btn_standard = ctk.CTkButton(
             self.top_bar, text="Standard", height=40, font=("Arial", 13, "bold"),
             fg_color=self.inactive_color, command=self.show_standard
@@ -645,44 +673,55 @@ class GPAMainWindow(ctk.CTk):
         )
         self.btn_cumulative.grid(row=0, column=4, padx=5, pady=8)
 
-        # THEME
+
+        # theme ( dark and light)
         self.theme_optionmenu = ctk.CTkOptionMenu(
-            self.top_bar, values=["Dark", "Light"], height=35,
+            self.top_bar, values=["Light" , "Dark"], height=35,
             font=("Arial", 12, "bold"), command=ctk.set_appearance_mode
         )
         self.theme_optionmenu.grid(row=0, column=6, padx=10, pady=8, sticky="e")
 
-        # MAIN CONTAINER
+
+        # main Container (all frames in it ..)
         self.container = ctk.CTkFrame(self, corner_radius=10)
         self.container.grid(row=1, column=0, sticky="nsew", padx=15, pady=(0, 15))
         self.container.grid_rowconfigure(0, weight=1)
         self.container.grid_columnconfigure(0, weight=1)
 
-        self.custom_scale = {}
+        self.custom_scale = {} # empty dic
 
-        # CREATE PAGES WITH SCALE TYPES
+        # create pages with scale types
+
+        #object from GPACalculatorUIFrame
         self.frame_standard = GPACalculatorUIFrame(
             self.container, "Standard Scale", scale_type="standard"
         )
 
+        #object from GPACalculatorUIFrame
         self.frame_half = GPACalculatorUIFrame(
             self.container, "Half-Point Scale", scale_type="half_point"
         )
 
+        #object from CustomScaleUIFrame (main custom page.)
         self.frame_custom = CustomScaleUIFrame(
             self.container, self.save_custom_scale
         )
 
+        #object from GPACalculatorUIFrame
         self.frame_custom_gpa = GPACalculatorUIFrame(
             self.container, "Custom Scale", scale_type="custom", on_edit_custom=self.edit_custom_scale
         )
 
+        #object from TargetGPAUIFrame
         self.frame_target = TargetGPAUIFrame(self.container)
+
+        #object from CumulativeGPAUIFrame
         self.frame_cumulative = CumulativeGPAUIFrame(self.container)
 
-        # SHOW DEFAULT PAGE
+        # show standard window
         self.show_standard()
 
+    # methodss
     def hide_all_frames(self):
         self.frame_standard.grid_forget()
         self.frame_half.grid_forget()
@@ -691,6 +730,7 @@ class GPAMainWindow(ctk.CTk):
         self.frame_target.grid_forget()
         self.frame_cumulative.grid_forget()
 
+    # active and inactive buttons
     def update_button_styles(self, active_btn):
         self.btn_standard.configure(fg_color=self.inactive_color)
         self.btn_half.configure(fg_color=self.inactive_color)
@@ -746,7 +786,3 @@ class GPAMainWindow(ctk.CTk):
         self.destroy()
 
 
-# run
-if __name__ == "__main__":
-    app = GPAMainWindow()
-    app.mainloop()

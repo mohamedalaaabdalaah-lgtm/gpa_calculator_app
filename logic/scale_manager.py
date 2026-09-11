@@ -6,25 +6,15 @@ STANDARD_SCALE = {
 }
 
 HALF_POINT_SCALE ={
-    'A+': 4.0, 'A': 3.5, 
-    'B+': 3.0, 'B': 2.5, 
-    'C+': 2.0, 'C': 1.5, 
-    'D+': 1.0, 'D': 0.5,
+    'A': 4.0,
+    'B+': 3.5, 'B': 3.0, 
+    'C+': 2.5, 'C': 2.0, 
+    'D+': 1.5, 'D': 1.0,
     'F': 0.0 
 }
 
-def check_scale(scale_data):
-    if not isinstance(scale_data, dict) or len(scale_data) == 0:
-        return False 
-    for grade, points in scale_data.items():
-        if not isinstance(grade, str) or not isinstance(points, (int, float)):
-            return False
-        if points < 0:
-            return False
 
-        return True
-
-def get_grade_points(grade, scale_type = "standaed",custom_scale_dict=None):
+def get_grade_points(grade, scale_type = "standard",custom_scale_dict=None):
     grade = grade.upper()
 
     if scale_type == "standard" :
